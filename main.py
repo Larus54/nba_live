@@ -29,12 +29,9 @@ def get_today_games():
 @app.get("/nba/standings")
 def get_standings():
     try:
-        res = leaguestandings.LeagueStandings().get_dict()
-        if "resultSet" not in res or "rowSet" not in res["resultSet"]:
-            return {"error": "No data from NBA API"}
-
-        data = res["resultSet"]["rowSet"]
-        headers = res["resultSet"]["headers"]
+        standings = leaguestandingsv3.LeagueStandingsV3().get_dict()
+        data = standings["resultSets"][0]["rowSet"]
+        headers = standings["resultSets"][0]["headers"]
 
         east = []
         west = []
