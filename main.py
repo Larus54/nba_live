@@ -60,7 +60,7 @@ def get_standings():
         }
 
     except Exception as e:
-        return {"error": str(e)}-
+        return {"error": str(e)}
 
 @app.get("/nba/live")
 def get_live_games():
