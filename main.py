@@ -47,7 +47,8 @@ def get_standings():
                 "rank": team_data["PlayoffRank"],
                 "conf": team_data["Conference"],
                 "streak": team_data["strCurrentStreak"]
-            }
+		"teamId": team_data["TeamID"]
+	    }
             if entry["conf"] == "East":
                 east.append(entry)
             else:
@@ -59,7 +60,7 @@ def get_standings():
         }
 
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e)}-
 
 @app.get("/nba/live")
 def get_live_games():
