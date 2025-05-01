@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nba_api.live.nba.endpoints import scoreboard
 from nba_api.stats.endpoints import leaguestandingsv3
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -10,6 +11,8 @@ app.add_middleware(
     allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
 
+
+app.mount("/logos", StaticFiles(directory="logos"), name="logos")
 @app.get("/nba/today")
 def get_today_games():
     data = scoreboard.ScoreBoard()
