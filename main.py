@@ -40,11 +40,13 @@ def get_standings():
         for row in data:
             team_data = dict(zip(headers, row))
             entry = {
-                "team": team_data["TeamName"],
+                "team": f"{team_data['TeamCity']} {team_data['TeamName']}",
                 "wins": team_data["WINS"],
                 "losses": team_data["LOSSES"],
+                "winPct": round(team_data["WinPCT"] * 100, 1),  # es. 63.2
+                "rank": team_data["PlayoffRank"],
                 "conf": team_data["Conference"],
-                "rank": team_data["ConfRank"]  # <- fix
+                "streak": team_data["strCurrentStreak"]
             }
             if entry["conf"] == "East":
                 east.append(entry)
