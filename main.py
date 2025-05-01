@@ -28,30 +28,38 @@ def get_today_games():
 
 @app.get("/nba/standings")
 def get_standings():
-    data = leaguestandings.LeagueStandings().get_dict()["resultSet"]["rowSet"]
-    headers = leaguestandings.LeagueStandings().get_dict()["resultSet"]["headers"]
+    try:
+        res = leaguestandings.LeagueStandings().get_dict()
+        if "resultSet" not in res or "rowSet" not in res["resultSet"]:
+            return {"error": "No data from NBA API"}
 
-    east = []
-    west = []
+        data = res["resultSet"]["rowSet"]
+        headers = res["resultSet"]["headers"]
 
-    for row in data:
-        team_data = dict(zip(headers, row))
-        entry = {
-            "team": team_data["TeamName"],
-            "wins": team_data["WINS"],
-            "losses": team_data["LOSSES"],
-            "conf": team_data["Conference"],
-            "rank": team_data["ConferenceRank"]
+        east = []
+        west = []
+
+        for row in data:
+            team_data = dict(zip(headers, row))
+            entry = {
+                "team": team_data["TeamName"],
+                "wins": team_data["WINS"],
+                "losses": team_data["LOSSES"],
+                "conf": team_data["Conference"],
+                "rank": team_data["ConferenceRank"]
+            }
+            if entry["conf"] == "East":
+                east.append(entry)
+            else:
+                west.append(entry)
+
+        return {
+            "east": sorted(east, key=lambda x: int(x["rank"])),
+            "west": sorted(west, key=lambda x: int(x["rank"])),
         }
-        if entry["conf"] == "East":
-            east.append(entry)
-        else:
-            west.append(entry)
 
-    return {
-        "east": sorted(east, key=lambda x: int(x["rank"])),
-        "west": sorted(west, key=lambda x: int(x["rank"])),
-    }
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get("/nba/live")
 def get_live_games():
