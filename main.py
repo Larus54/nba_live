@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nba_api.live.nba.endpoints import scoreboard, standings
@@ -20,6 +21,7 @@ def get_today_games():
             "homeScore": g["homeTeam"]["score"],
             "awayScore": g["awayTeam"]["score"],
             "status": g["gameStatusText"],
+            "gameLabel": g.get("gameLabel", "")  # aggiunto qui
         }
         for g in games
     ]
@@ -43,7 +45,6 @@ def get_standings():
         else:
             west.append(team_data)
 
-    # Ordina per posizione conference
     east_sorted = sorted(east, key=lambda x: int(x["rank"]))
     west_sorted = sorted(west, key=lambda x: int(x["rank"]))
 
@@ -57,13 +58,14 @@ def get_live_games():
     data = scoreboard.ScoreBoard()
     live_games = []
     for g in data.get_dict()["scoreboard"]["games"]:
-        if g["gameStatus"] == 2:  # 2 = IN_PROGRESS
+        if g["gameStatus"] == 2:
             live_games.append({
                 "home": g["homeTeam"]["teamName"],
                 "away": g["awayTeam"]["teamName"],
                 "homeScore": g["homeTeam"]["score"],
                 "awayScore": g["awayTeam"]["score"],
                 "clock": g["gameClock"],
-                "period": g["period"]
+                "period": g["period"],
+                "gameLabel": g.get("gameLabel", "")  # aggiunto anche qui
             })
     return live_games
