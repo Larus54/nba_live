@@ -1,7 +1,7 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from nba_api.live.nba.endpoints import scoreboard, standings
+from nba_api.live.nba.endpoints import scoreboard
+from nba_api.stats.endpoints import leaguestandings
 
 app = FastAPI()
 
@@ -28,29 +28,29 @@ def get_today_games():
 
 @app.get("/nba/standings")
 def get_standings():
-    data = standings.Standings().get_dict()["standings"]["teams"]
+    data = leaguestandings.LeagueStandings().get_dict()["resultSet"]["rowSet"]
+    headers = leaguestandings.LeagueStandings().get_dict()["resultSet"]["headers"]
+
     east = []
     west = []
 
-    for team in data:
-        team_data = {
-            "team": team["teamSitesOnly"]["teamName"],
-            "wins": team["win"],
-            "losses": team["loss"],
-            "conf": team["conference"]["name"],
-            "rank": team["conference"]["rank"]
+    for row in data:
+        team_data = dict(zip(headers, row))
+        entry = {
+            "team": team_data["TeamName"],
+            "wins": team_data["WINS"],
+            "losses": team_data["LOSSES"],
+            "conf": team_data["Conference"],
+            "rank": team_data["ConferenceRank"]
         }
-        if team_data["conf"] == "East":
-            east.append(team_data)
+        if entry["conf"] == "East":
+            east.append(entry)
         else:
-            west.append(team_data)
-
-    east_sorted = sorted(east, key=lambda x: int(x["rank"]))
-    west_sorted = sorted(west, key=lambda x: int(x["rank"]))
+            west.append(entry)
 
     return {
-        "east": east_sorted,
-        "west": west_sorted,
+        "east": sorted(east, key=lambda x: int(x["rank"])),
+        "west": sorted(west, key=lambda x: int(x["rank"])),
     }
 
 @app.get("/nba/live")
