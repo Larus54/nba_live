@@ -46,7 +46,7 @@ def get_standings():
                 "winPct": round(team_data["WinPCT"] * 100, 1),  # es. 63.2
                 "rank": team_data["PlayoffRank"],
                 "conf": team_data["Conference"],
-                "streak": team_data["strCurrentStreak"]
+                "streak": team_data["strCurrentStreak"],
 		"teamId": team_data["TeamID"]
 	    }
             if entry["conf"] == "East":
