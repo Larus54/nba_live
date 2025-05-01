@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nba_api.live.nba.endpoints import scoreboard
-from nba_api.stats.endpoints import leaguestandings
+from nba_api.stats.endpoints import leaguestandingsv3
 
 app = FastAPI()
 
