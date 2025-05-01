@@ -29,9 +29,10 @@ def get_today_games():
 @app.get("/nba/standings")
 def get_standings():
     try:
-        standings = leaguestandingsv3.LeagueStandingsV3().get_dict()
-        data = standings["resultSets"][0]["rowSet"]
-        headers = standings["resultSets"][0]["headers"]
+        res = leaguestandingsv3.LeagueStandingsV3().get_dict()
+        result = res["resultSets"][0]
+        headers = result["headers"]
+        data = result["rowSet"]
 
         east = []
         west = []
@@ -43,7 +44,7 @@ def get_standings():
                 "wins": team_data["WINS"],
                 "losses": team_data["LOSSES"],
                 "conf": team_data["Conference"],
-                "rank": team_data["ConferenceRank"]
+                "rank": team_data["ConfRank"]  # <- fix
             }
             if entry["conf"] == "East":
                 east.append(entry)
