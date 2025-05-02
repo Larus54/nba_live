@@ -11,8 +11,8 @@ app.add_middleware(
     allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
 )
 
-
 app.mount("/logos", StaticFiles(directory="logos"), name="logos")
+
 @app.get("/nba/today")
 def get_today_games():
     data = scoreboard.ScoreBoard()
@@ -24,7 +24,11 @@ def get_today_games():
             "homeScore": g["homeTeam"]["score"],
             "awayScore": g["awayTeam"]["score"],
             "status": g["gameStatusText"],
-            "gameLabel": g.get("gameLabel", "")  # aggiunto qui
+            "gameLabel": g.get("gameLabel", ""),
+            "seriesGameNumber": g.get("seriesGameNumber", ""),
+            "seriesText": g.get("seriesText", ""),
+            "homeTeamId": g["homeTeam"].get("teamId", ""),
+            "awayTeamId": g["awayTeam"].get("teamId", "")
         }
         for g in games
     ]
@@ -46,12 +50,12 @@ def get_standings():
                 "team": f"{team_data['TeamCity']} {team_data['TeamName']}",
                 "wins": team_data["WINS"],
                 "losses": team_data["LOSSES"],
-                "winPct": round(team_data["WinPCT"] * 100, 1),  # es. 63.2
+                "winPct": round(team_data["WinPCT"] * 100, 1),
                 "rank": team_data["PlayoffRank"],
                 "conf": team_data["Conference"],
                 "streak": team_data["strCurrentStreak"],
-		"teamId": team_data["TeamID"]
-	    }
+                "teamId": team_data["TeamID"]
+            }
             if entry["conf"] == "East":
                 east.append(entry)
             else:
@@ -78,6 +82,6 @@ def get_live_games():
                 "awayScore": g["awayTeam"]["score"],
                 "clock": g["gameClock"],
                 "period": g["period"],
-                "gameLabel": g.get("gameLabel", "")  # aggiunto anche qui
+                "gameLabel": g.get("gameLabel", "")
             })
     return live_games
