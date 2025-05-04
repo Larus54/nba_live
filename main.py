@@ -77,16 +77,8 @@ def get_live_games():
     live_games = []
     for g in data.get_dict()["scoreboard"]["games"]:
         if g["gameStatus"] == 2:
-            live_games.append({
-                "home": g["homeTeam"]["teamName"],
-                "away": g["awayTeam"]["teamName"],
-                "homeScore": g["homeTeam"]["score"],
-                "awayScore": g["awayTeam"]["score"],
-                "clock": g["gameClock"],
-                "period": g["period"],
-                "gameLabel": g.get("gameLabel", "")
-            })
-    return live_games
+            return g
+    return {"error": "No live games found"}
 
 @app.get("/nba/ended/{game_id}")
 def get_ended_game_by_id(game_id: str):
