@@ -94,3 +94,72 @@ def get_ended_game_by_id(game_id: str):
         if g["gameStatus"] == 3 and g["gameId"] == game_id:
             return g
     return {"error": "Game not found or not finished"}
+
+from nba_api.stats.endpoints import boxscoresummaryv2
+
+@app.get("/nba/recap/{game_id}")
+def get_full_game_recap(game_id: str):
+    try:
+        summary = boxscoresummaryv2.BoxScoreSummaryV2(game_id=game_id).get_dict()
+        recap = {}
+
+        for rs in summary["resultSets"]:
+            name = rs["name"]
+            headers = rs["headers"]
+            rows = rs["rowSet"]
+
+            if not rows:
+                continue
+
+            if name == "GameSummary":
+                values = dict(zip(headers, rows[0]))
+                recap["gameSummary"] = {
+                    "gameDate": values.get("GAME_DATE_EST"),
+                    "arena": values.get("ARENA_NAME"),
+                    "attendance": values.get("ATTENDANCE"),
+                    "broadcaster": values.get("NATL_TV_BROADCASTER_ABBREVIATION"),
+                    "videoAvailable": values.get("VIDEO_AVAILABLE_FLAG", 0) == 1,
+                }
+
+            elif name == "GameInfo":
+                values = dict(zip(headers, rows[0]))
+                recap["info"] = {
+                    "headline": values.get("GAME_DATE"),
+                    "gameTime": values.get("GAME_TIME"),
+                    "gameNarrative": values.get("GAME_NARRATIVE"),
+                }
+
+            elif name == "LastMeeting":
+                values = dict(zip(headers, rows[0]))
+                recap["lastMeeting"] = {
+                    "matchup": values.get("MATCHUP"),
+                    "lastWinner": values.get("W_L"),
+                    "lastDate": values.get("GAME_DATE"),
+                }
+
+            elif name == "Officials":
+                recap["officials"] = [
+                    dict(zip(headers, row)) for row in rows
+                ]
+
+            elif name == "InactivePlayers":
+                recap["inactivePlayers"] = [
+                    dict(zip(headers, row)) for row in rows
+                ]
+
+            elif name == "AvailableVideo":
+                values = dict(zip(headers, rows[0]))
+                recap["availableVideo"] = {
+                    "videoUrls": values.get("VIDEO_URL", ""),
+                    "videoId": values.get("VIDEO_ID", "")
+                }
+
+            elif name == "OtherStats":
+                recap["otherStats"] = [
+                    dict(zip(headers, row)) for row in rows
+                ]
+
+        return recap
+
+    except Exception as e:
+        return {"error": str(e)}
