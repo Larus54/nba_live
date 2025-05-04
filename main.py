@@ -19,6 +19,7 @@ def get_today_games():
     games = data.get_dict()["scoreboard"]["games"]
     return [
         {
+            "gameId": g["gameId"],
             "home": g["homeTeam"]["teamName"],
             "away": g["awayTeam"]["teamName"],
             "homeScore": g["homeTeam"]["score"],
@@ -28,7 +29,7 @@ def get_today_games():
             "seriesGameNumber": g.get("seriesGameNumber", ""),
             "seriesText": g.get("seriesText", ""),
             "homeTeamId": g["homeTeam"].get("teamId", ""),
-            "awayTeamId": g["awayTeam"].get("teamId", "")
+            "awayTeamId": g["awayTeam"].get("teamId", ""),
         }
         for g in games
     ]
@@ -85,3 +86,14 @@ def get_live_games():
                 "gameLabel": g.get("gameLabel", "")
             })
     return live_games
+
+@app.get("/nba/ended")
+def get_ended_games():
+    data = scoreboard.ScoreBoard()
+    ended_games = []
+
+    for g in data.get_dict()["scoreboard"]["games"]:
+        if g["gameStatus"] == 3:
+            ended_games.append(g)
+
+    return ended_games
