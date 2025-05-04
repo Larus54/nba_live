@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from nba_api.live.nba.endpoints import scoreboard
 from nba_api.stats.endpoints import leaguestandingsv3
 from fastapi.staticfiles import StaticFiles
+from nba_api.stats.endpoints import boxscoresummaryv2
 
 app = FastAPI()
 
@@ -95,15 +96,26 @@ def get_ended_game_by_id(game_id: str):
             return g
     return {"error": "Game not found or not finished"}
 
-from nba_api.stats.endpoints import boxscoresummaryv2
 
-@app.get("/nba/recap/{game_id}")
-def get_full_game_recap(game_id: str):
+@app.get("/nba/game-details/{game_id}")
+def get_game_details(game_id: str):
     try:
-        summary = boxscoresummaryv2.BoxScoreSummaryV2(game_id=game_id).get_dict()
+        # === 1. Ottieni dati dalla parte "live.ended" ===
+        data = scoreboard.ScoreBoard()
+        ended_game = None
+        for g in data.get_dict()["scoreboard"]["games"]:
+            if g["gameId"] == game_id and g["gameStatus"] == 3:
+                ended_game = g
+                break
+
+        if not ended_game:
+            return {"error": "Game not found or not ended."}
+
+        # === 2. Ottieni dati da BoxScoreSummaryV2 ===
+        recap_raw = boxscoresummaryv2.BoxScoreSummaryV2(game_id=game_id).get_dict()
         recap = {}
 
-        for rs in summary["resultSets"]:
+        for rs in recap_raw["resultSets"]:
             name = rs["name"]
             headers = rs["headers"]
             rows = rs["rowSet"]
@@ -159,7 +171,10 @@ def get_full_game_recap(game_id: str):
                     dict(zip(headers, row)) for row in rows
                 ]
 
-        return recap
+        return {
+            "game": ended_game,
+            "recap": recap
+        }
 
     except Exception as e:
         return {"error": str(e)}
