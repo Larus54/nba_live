@@ -87,13 +87,10 @@ def get_live_games():
             })
     return live_games
 
-@app.get("/nba/ended")
-def get_ended_games():
+@app.get("/nba/ended/{game_id}")
+def get_ended_game_by_id(game_id: str):
     data = scoreboard.ScoreBoard()
-    ended_games = []
-
     for g in data.get_dict()["scoreboard"]["games"]:
-        if g["gameStatus"] == 3:
-            ended_games.append(g)
-
-    return ended_games
+        if g["gameStatus"] == 3 and g["gameId"] == game_id:
+            return g
+    return {"error": "Game not found or not finished"}
