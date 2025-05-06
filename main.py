@@ -181,9 +181,10 @@ def get_game_details(game_id: str):
                 }
 
             elif name == "OtherStats":
-                recap["otherStats"] = [
+                recap["playerStats"] = [
                     dict(zip(headers, row)) for row in rows
                 ]
+
 
         return {
             "game": ended_game,
