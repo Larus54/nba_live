@@ -18,8 +18,10 @@ app.mount("/logos", StaticFiles(directory="logos"), name="logos")
 def get_today_games():
     data = scoreboard.ScoreBoard()
     games = data.get_dict()["scoreboard"]["games"]
-    return [
-        {
+    result = []
+
+    for g in games:
+        game_data = {
             "gameId": g["gameId"],
             "home": g["homeTeam"]["teamName"],
             "away": g["awayTeam"]["teamName"],
@@ -32,9 +34,21 @@ def get_today_games():
             "homeTeamId": g["homeTeam"].get("teamId", ""),
             "awayTeamId": g["awayTeam"].get("teamId", ""),
         }
-        for g in games
-    ]
 
+        # ✅ Se la partita è finita o live, aggiungi i punteggi per periodo
+        if g["gameStatus"] in [2, 3]:  # 2 = live, 3 = final
+            game_data["homePeriods"] = [
+                {"period": p["period"], "score": p["score"]}
+                for p in g["homeTeam"].get("periods", [])
+            ]
+            game_data["awayPeriods"] = [
+                {"period": p["period"], "score": p["score"]}
+                for p in g["awayTeam"].get("periods", [])
+            ]
+
+        result.append(game_data)
+
+    return result
 @app.get("/nba/standings")
 def get_standings():
     try:
