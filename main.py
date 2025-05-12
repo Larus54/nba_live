@@ -4,6 +4,11 @@ from nba_api.live.nba.endpoints import scoreboard
 from nba_api.stats.endpoints import leaguestandingsv3
 from fastapi.staticfiles import StaticFiles
 from nba_api.stats.endpoints import boxscoresummaryv2
+import fastf1
+from fastf1.ergast import Ergast
+from fastf1 import plotting
+from datetime import datetime
+
 
 app = FastAPI()
 
@@ -205,5 +210,48 @@ def get_game_details(game_id: str):
             "recap": recap
         }
 
+    except Exception as e:
+        return {"error": str(e)}
+
+# Formula 1 API endpoints
+
+@app.get("/f1/schedule")
+def get_schedule():
+    try:
+        ergast = Ergast()
+        schedule = ergast.get_schedule().content
+        return schedule
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/f1/standings")
+def get_f1_standings():
+    try:
+        ergast = Ergast()
+        drivers = ergast.get_driver_standings().content
+        constructors = ergast.get_constructor_standings().content
+        return {
+            "drivers": drivers,
+            "constructors": constructors
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/f1/results/{year}/{round}")
+def get_race_results(year: int, round: int):
+    try:
+        ergast = Ergast()
+        results = ergast.get_race_results(season=year, round=round).content
+        return results
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/f1/livetiming/{year}/{gp}/{session}")
+def get_live_timing(year: int, gp: str, session: str):
+    try:
+        session_obj = fastf1.get_session(year, gp, session)
+        session_obj.load()
+        laps = session_obj.laps.pick_quicklaps()
+        return laps.to_dict(orient="records")
     except Exception as e:
         return {"error": str(e)}
